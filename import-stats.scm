@@ -34,7 +34,7 @@
                    [(#/Maximum resident set size \(kbytes\): (\d+)/ line)
                     => (lambda (m)
                          (push! cmd (* (string->number (m 1)) 1024)))]
-                   [(#/Major (requiring I/O) page faults: (\d+)/ line)
+                   [(#/Major \(requiring I/O\) page faults: (\d+)/ line)
                     => (lambda (m)
                          (push! cmd (* (string->number (m 1)) 1024)))]
                    [(#/Exit status: / line)
