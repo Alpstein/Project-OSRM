@@ -25,12 +25,12 @@
                     => (lambda (m)
                          (assert stats)
                          (set! cmd (list (m 2) (m 1))))])
-             (cond [(#/Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): (\d*:)?(\d+):(\d+(.\d+)?)/ line)
+             (cond [(#/Elapsed \(wall clock\) time \(h:mm:ss or m:ss\): ((\d*):)?(\d+):(\d+(.\d+)?)/ line)
                     => (lambda (m)
-                         (push! cmd (+ (* (+ (* (or (and (m 1) (string->number (m 1))) 0) 60)
-                                                  (string->number (m 2)))
-                                               60)
-                                            (string->number (m 3)))))]
+                         (push! cmd (+ (* (+ (* (or (and (m 2) (string->number (m 2))) 0) 60)
+                                             (string->number (m 3)))
+                                          60)
+                                       (string->number (m 4)))))]
                    [(#/Maximum resident set size \(kbytes\): (\d+)/ line)
                     => (lambda (m)
                          (push! cmd (* (string->number (m 1)) 1024)))]
