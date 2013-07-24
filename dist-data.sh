@@ -26,8 +26,3 @@ for PH in $PROFILES; do
     done
     [ $RETRY -gt 0 ]
 done
-
-# copy sql dump to web space
-cp -v build/data/test.sql.bz2 /var/www/test.sql.bz2
-# copy osm to web space
-cp -v build/data/test.split.osm.bz2 /var/www/test.split.osm.bz2
