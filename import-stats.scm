@@ -34,7 +34,7 @@
                    [(#/Maximum resident set size \(kbytes\): (\d+)/ line)
                     => (lambda (m)
                          (push! cmd (* (string->number (m 1)) 1024)))]
-                   [(#/Exit status: 0/ line)
+                   [(#/Exit status: / line)
                     (push! res (append script-run (reverse cmd) stats))
                     (set! cmd #f)])))
     (for-each (lambda(r)
