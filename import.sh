@@ -49,6 +49,27 @@ END
 EOF
 } > ${OUTDIR}/tuemini.poly
 
+# create poly file
+for i in $(seq 10); do
+    x="9.05"
+    y="48.52"
+    xl=$(echo "scale=2; $x - $i/5"|bc)
+    xr=$(echo "scale=2; $x + $i/5"|bc)
+    yb=$(echo "scale=2; $y - $i/5"|bc)
+    yt=$(echo "scale=2; $y + $i/5"|bc)
+{ cat <<EOF
+none
+1
+    $xl $yt
+    $xl $yb
+    $xr $yb
+    $xr $yt
+END
+END
+EOF
+} > ${OUTDIR}/scale$i.poly
+done
+
 { cat <<EOF
 none
 1
@@ -99,7 +120,7 @@ EOF
 
 # cut out poly using osmosis
 CUTOSM="${OUTDIR}/$X.cut.${POLY%*.poly}.osm.bz2"
-test -f "$CUTOSM" || pv ${OUTDIR}/$X.osm.bz2|pbzip2 -d|osmosis --read-xml file=/dev/stdin --bounding-polygon file=${OUTDIR}/$POLY completeWays=yes --write-xml /dev/stdout|pbzip2 > "$CUTOSM"
+test -f "$CUTOSM" || pv ${OUTDIR}/$X.osm.bz2|pbzip2 -d|timed osmosis --read-xml file=/dev/stdin --bounding-polygon file=${OUTDIR}/$POLY completeWays=yes --write-xml /dev/stdout|pbzip2 > "$CUTOSM"
 
 pushd waysplit
 # note: $X.split.osm.bz2 only for debugging
