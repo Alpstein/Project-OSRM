@@ -306,7 +306,7 @@
                                      (ref (assoc-ref r "phantomratios") 1)))))
       (assert (< (apply max (append (map (compose abs -) (calculate-start r) (start-point r))
                                     (map (compose abs -) (calculate-end r)   (end-point r))))
-                 2e-5))
+                 3e-5))
       (assert (not (null? way-list)))
       (let* ((way-list (cond [(= (size-of way-list) 1)
                               (assert (equal? (ref start-linref 0) (ref end-linref 0)))
