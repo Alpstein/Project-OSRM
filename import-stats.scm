@@ -4,6 +4,7 @@
 
 (use sxml.adaptor) ;; for assert
 (use svg-plot)
+(use srfi-1) ;; for filter
 
 (define (main args)
   (debug-print-width 10000)
