@@ -5,6 +5,7 @@
 (use sxml.adaptor) ;; for assert
 (use svg-plot)
 (use srfi-1) ;; for filter
+(use util.list) ;; for assoc-ref
 
 (define (main args)
   (debug-print-width 10000)
