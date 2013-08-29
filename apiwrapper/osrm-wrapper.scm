@@ -437,9 +437,9 @@
   (let-optionals* args ((option 'shortest)
                         (v-avg #f))
     (assert (member option '(shortest fastest flat network)))
-    (assert (ref context 'presets preset #f))
+    (assert (assoc-ref (ref context 'presets) preset))
     (let1 timescale (or (and v-avg
-                             (/. (assoc-ref (ref context 'presets preset) 'vstd)
+                             (/. (assoc-ref (assoc-ref (ref context 'presets) preset) 'vstd)
                                  (x->number v-avg)))
                         1)
       (assert (> timescale 0))
