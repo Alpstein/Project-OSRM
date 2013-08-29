@@ -444,7 +444,7 @@
                         1)
       (assert (> timescale 0))
       (values timescale
-              (assoc-ref (assoc-ref *presets* preset) 'profile)))))
+              (assoc-ref (assoc-ref (ref context 'presets) preset) 'profile)))))
 
 (define (wrap-osrm-route context params)
   (let ((jscallback (cgi-get-parameter "callback" params :default ""))
