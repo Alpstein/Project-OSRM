@@ -57,11 +57,6 @@ function max-id()
     ./min-max-id.c|cut -f 2 -d " "
 }
 
-function cpus()
-{
-    grep ^proc /proc/cpuinfo |wc -l
-}
-
 trap atexit EXIT 
 
 OSM_IN="$1"
@@ -94,7 +89,7 @@ $PV $MYTMPDIR/osm_as_sxml.scm|grep '^(node'|./used-nodes-pos.scm $MYTMPDIR/used-
 #rm -v $MYTMPDIR/used-nodes.dbm
 
 msg "C) calculate way splits (depends on A, todo: could be merged with B)"
-$PV $MYTMPDIR/osm_as_sxml.scm|grep '^(way'|./parallel-pipe.scm $(cpus) read-line print-line read-line print ./way-splits.scm $MYTMPDIR/real-nodes.dbm |./store-way-splits.scm "$(cat $MYTMPDIR/max-id.out)" $MYTMPDIR/way-splits.dbm
+$PV $MYTMPDIR/osm_as_sxml.scm|grep '^(way'|./parallel-pipe.scm $(nproc) read-line print-line read-line print ./way-splits.scm $MYTMPDIR/real-nodes.dbm |./store-way-splits.scm "$(cat $MYTMPDIR/max-id.out)" $MYTMPDIR/way-splits.dbm
 
 msg "D) parse relations (todo: could be pipelined)"
 $PV $MYTMPDIR/osm_as_sxml.scm|{ grep '^(relation' || true; }|./relations.scm $MYTMPDIR/way-relation.dbm $MYTMPDIR/relation.dbm
@@ -102,8 +97,8 @@ $PV $MYTMPDIR/osm_as_sxml.scm|{ grep '^(relation' || true; }|./relations.scm $MY
 
 msg "E) drop unused nodes, apply way splits, profile ways, denormalize relations, fix way references in restriction relations, transform sxml to xml"
 PSPLITS=2
-if [ $(cpus) -gt 2 ]; then
-    PSPLITS=$[$(cpus)/2]
+if [ $(nproc) -gt 2 ]; then
+    PSPLITS=$[$(nproc)/2]
 fi
 $PV $MYTMPDIR/osm_as_sxml.scm | {
     ./parallel-pipe.scm $PSPLITS read-line print-line read-blob write-blob ./apply-way-splits.scm parallel-pipe $MYTMPDIR/way-splits.dbm $MYTMPDIR/node-pos.dbm $MYTMPDIR/way-relation.dbm $MYTMPDIR/relation.dbm \
