@@ -42,6 +42,8 @@ or see http://www.gnu.org/licenses/agpl.txt.
 #include "../Util/OpenMPWrapper.h"
 #include "../Util/StringUtil.h"
 
+#include <stxxl.h>
+
 class Contractor {
 
 private:
@@ -103,11 +105,30 @@ private:
         }
     };
 
+    // for stxxl:sort
+    struct CompareContractorEdges {
+      bool operator() (const _ContractorEdge &a, const _ContractorEdge &b) const {
+	return a<b;
+      }
+      _ContractorEdge min_value() {
+	// todo: why stxxl:sort needs min_value?! unsigned 0 ok?
+	_ContractorEdge r;
+	r.source=r.target=(std::numeric_limits<DynamicGraph< _ContractorEdgeData >::NodeIterator>::min)();
+	return r;
+      }
+      _ContractorEdge max_value() {
+	// todo: why stxxl:sort needs max_value?!
+	_ContractorEdge r;
+	r.source=r.target=(std::numeric_limits<DynamicGraph< _ContractorEdgeData >::NodeIterator>::max)();
+	return r;
+      }
+    };
+
 public:
 
     template<class ContainerT >
     Contractor( int nodes, ContainerT& inputEdges) {
-        std::vector< _ContractorEdge > edges;
+        stxxl::vector< _ContractorEdge > edges;
         edges.reserve(inputEdges.size()*2);
 
         typename ContainerT::deallocation_iterator diter = inputEdges.dbegin();
@@ -134,7 +155,7 @@ public:
         }
         //clear input vector and trim the current set of edges with the well-known swap trick
         inputEdges.clear();
-        sort( edges.begin(), edges.end() );
+	stxxl::sort( edges.begin(), edges.end(), CompareContractorEdges(), 1024*1024*1024);
         NodeID edge = 0;
         for ( NodeID i = 0; i < edges.size(); ) {
             const NodeID source = edges[i].source;
@@ -198,7 +219,7 @@ public:
         edges.resize( edge );
         _graph = boost::make_shared<_DynamicGraph>( nodes, edges );
         edges.clear();
-        std::vector<_ContractorEdge>().swap(edges);
+        //std::vector<_ContractorEdge>().swap(edges);
         //        unsigned maxdegree = 0;
         //        NodeID highestNode = 0;
         //
