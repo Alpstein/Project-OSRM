@@ -4,6 +4,7 @@
 (use gauche.test)
 (use routing-client)
 (use gauche.net)
+(use util.list) ;; assoc-ref
 
 ;; do dns lookup only once, see also discussion about sys-gethostbyname on gauche-devel ml
 (define *host* (car (slot-ref (sys-gethostbyname "routing.outdooractive.com.") 'addresses)))

@@ -4,6 +4,7 @@
 (use routing-client)
 (use gauche.net)
 (use srfi-27)
+(use util.list) ;; assoc-ref
 
 ;; (random-source-randomize! default-random-source)
 
