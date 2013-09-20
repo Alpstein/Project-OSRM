@@ -273,6 +273,7 @@
       expr)))
 
 (define (main args)
+  (set! (port-buffering (current-error-port)) :full)
   (let-optionals* (cdr args) ((output-format "parallel-pipe")
 			      (way-splits "way-splits.dbm")
 			      ;;(used-nodes "used-nodes.dbm")
