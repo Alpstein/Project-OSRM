@@ -49,32 +49,36 @@
 (define-syntax info
   (syntax-rules ()
     ((_ ?form)
-     (format/ss (current-error-port)
-                "~a~a pid=~s INFO: ~a"
-                (let1 si (debug-source-info '?form)
-                  (or (and si
-                           (string-append (car si)
-                                          ":"
-                                          (x->string (cadr si)) ": " ))
-                      ""))
-                (date->string (current-date) "~1 ~T") ;; .~N~z")
-                (sys-getpid)
-                ?form))))
+     (begin
+       (format/ss (current-error-port)
+		  "~a~a pid=~s INFO: ~a\n"
+		  (let1 si (debug-source-info '?form)
+			(or (and si
+				 (string-append (car si)
+						":"
+						(x->string (cadr si)) ": " ))
+			    ""))
+		  (date->string (current-date) "~1 ~T") ;; .~N~z")
+		  (sys-getpid)
+		  ?form)
+       (flush)))))
 
 (define-syntax warn
   (syntax-rules ()
     ((_ ?form)
-     (format/ss (current-error-port)
-                "~a~a pid=~s WARNING!: ~a"
-                (let1 si (debug-source-info '?form)
-                  (or (and si
-                           (string-append (car si)
-                                          ":"
-                                          (x->string (cadr si)) ": " ))
-                      ""))
-                (date->string (current-date) "~1 ~T") ;; .~N~z")
-                (sys-getpid)
-                ?form))))
+     (begin
+       (format/ss (current-error-port)
+		  "~a~a pid=~s WARNING!: ~a\n"
+		  (let1 si (debug-source-info '?form)
+			(or (and si
+				 (string-append (car si)
+						":"
+						(x->string (cadr si)) ": " ))
+			    ""))
+		  (date->string (current-date) "~1 ~T") ;; .~N~z")
+		  (sys-getpid)
+		  ?form)
+       (flush)))))
 
 (define (string->exact x)
   (let1 n (string->number x)
@@ -469,16 +473,16 @@
       (for-each dbm-close (list way-splits way-relation relation))
       (node-pos-map-close node-pos-map)
       
-      (info (format #f "dropped ~s/~s nodes\n" dropped-nodes num-in-nodes))
-      (info (format #f "splited ~s/~s ways into ~s ways\n" num-way-splits num-in-ways num-out-ways))
+      (info (format #f "dropped ~s/~s nodes" dropped-nodes num-in-nodes))
+      (info (format #f "splited ~s/~s ways into ~s ways" num-way-splits num-in-ways num-out-ways))
       (when (> dropped-durations 0)
-        (warn (format #f "dropped ~s duration tag(s)\n" dropped-durations)))
+        (warn (format #f "dropped ~s duration tag(s)" dropped-durations)))
       
-      (info (format #f "fixed ~s/~s relations\n" fixed-relations num-relations))
+      (info (format #f "fixed ~s/~s relations" fixed-relations num-relations))
       (when (> dropped-relations 0)
-        (warn (format #f "dropped ~s relations\n" dropped-relations)))
+        (warn (format #f "dropped ~s relations" dropped-relations)))
       (when (> failed-restrictions 0)
-        (warn (format #f "dropped ~s restrictions because of error\n" failed-restrictions)))
+        (warn (format #f "dropped ~s restrictions because of error" failed-restrictions)))
       (when (> via-way-restrictions 0)
-        (warn (format #f "dropped ~s via-way restrictions\n" via-way-restrictions)))))
+        (warn (format #f "dropped ~s via-way restrictions" via-way-restrictions)))))
   0)
