@@ -39,6 +39,7 @@ exec gosh -I. -- "$0" "$@"
   )
 
 (define (launch-jobs jobs cmd-spec)
+  ;; todo: stderr?
   (let1 r (map (lambda _ (run-process cmd-spec
                                       :input :pipe
                                       :output :pipe))
