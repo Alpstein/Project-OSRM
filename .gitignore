@@ -46,7 +46,6 @@ Thumbs.db
 
 # stxxl related files #
 #######################
-.stxxl
 stxxl.log
 stxxl.errlog
 
