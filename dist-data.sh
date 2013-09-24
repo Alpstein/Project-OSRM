@@ -12,7 +12,12 @@ test -n "$INSTANCE"
 
 DATADIR=$PWD/build/data
 RSYNC="rsync -avzW"
-$RSYNC $DATADIR/test.ways.dbm $WRAPPERHOST:/usr/local/lib/osrm-data/wrapper/test.$INSTANCE.ways.dbm
+if [ "$WRAPPERHOST" = "127.0.0.1" ]; then
+    WRAPPERHOST=""
+else
+    WRAPPERHOST="$WRAPPERHOST:"
+fi
+$RSYNC $DATADIR/test.ways.dbm ${WRAPPERHOST}/usr/local/lib/osrm-data/wrapper/test.$INSTANCE.ways.dbm
 for PH in $PROFILES; do
     P="$(echo $PH|cut -f 1 -d :)"
     H="$(echo $PH|cut -f 2 -d :)"
