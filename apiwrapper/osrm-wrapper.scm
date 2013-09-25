@@ -36,12 +36,6 @@
 
 (select-module osrm-wrapper)
 
-(cond-expand
- (tokyocabinet
-  (define *dbclass* <tcbdb>))
- (else
-  (define *dbclass* <gdbm>)))
-
 ;; (debug-print-width 4000)
 
 (define (s->min x)
