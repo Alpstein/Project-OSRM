@@ -31,11 +31,12 @@
 ;;;
 ;;;todos:
 ;;;- nearly identical to huge-sparse-bitmap
+;;;- use dbm-open keys :key-convert and :value-convert for conversion?!
 ;;;
 
 (define-module node-pos-map
   (use srfi-1)
-  (use dbm.gdbm)
+  (use default-dbm)
   (use gauche.collection)
   (use gauche.sequence)
   (use sxml.adaptor) ;; for assert
@@ -44,7 +45,6 @@
   (use gauche.uvector)
   (export node-pos-map-open
           node-pos-map-close
-          node-pos-map-sync
           node-pos-map-set!
           node-pos-map-get))
 
@@ -65,14 +65,14 @@
 
 (define (node-pos-map-open filename
                            :key
-                           (slot-size 64)
+                           (slot-size 64) ;; number of coordinates / slot
                            (cache-size 4096)
                            (rw-mode :write)
-                           ;; useless
-                           (max-size #f)
                            )
+  ;; fixed point encoding supporting NaN
+  ;; note: returned string may include \0!
   (define enc
-    (let1 buf (make-s32vector (* slot-size 2))
+    (let1 buf (make-s32vector (* slot-size 2)) ;; * 2 because of 2d coordinates
       (lambda(v)
         (assert (f64vector? v))
         (assert (= (f64vector-length v) (s32vector-length buf)))
@@ -113,7 +113,7 @@
     (set! (ref v 3) -180)
     (assert (equal? v (dec (enc v)))))
 
-  (let ((db (dbm-open <gdbm> :path filename :rw-mode rw-mode)))
+  (let ((db (default-dbm-open :path filename :rw-mode rw-mode)))
     ;; load options from db if it already exists
     (if-let1 meta (dbm-get db *meta-key* #f)
       (receive (s)
@@ -123,6 +123,11 @@
           (error "options don't match db"))))
     ;; save options to db
     (when (not (eq? rw-mode :read))
+      ;; make sure the db can store strings including \0!
+      (let1 v (make-f64vector (* slot-size 2) 0)
+        (dbm-put! db *meta-key* (enc v))
+        ;; in error case assert likely isn't reached as error occurs earlier
+        (assert (equal? (dec (dbm-get db *meta-key*)) v)))
       (dbm-put! db *meta-key* (write-to-string (list slot-size))))
 
     (let ((read-slot-value (lambda(k)
@@ -175,26 +180,15 @@
           (receive (q r) (quotient&remainder id slot-size)
             (slot-get (read-slot q) r default)))
 
-        (define sync
-          (let1 cache-sync (assoc-ref cache 'sync (lambda ()))
-            (lambda()
-              (cache-sync)
-              ;; todo: generic dbm api is missing sync
-              ;; how to sync db then?
-              ;; we can only close and re-open?
-              ;; for now use gdbm specific api
-              (assert (ref db 'gdbm-file))
-              (gdbm-sync (ref db 'gdbm-file)))))
-
         (let1 r `((set!  . ,node-pos-set!)
                   (get   . ,node-pos-get)
-                  (sync  . ,sync)
                   (close . ()))
           (set-cdr! (assq 'close r)
                     (lambda()
-                      ((assoc-ref r 'sync))
+                      ((assoc-ref cache 'sync (lambda ())))
                       (set-cdr! (assq 'set! r) (lambda _ (error "closed")))
                       (set-cdr! (assq 'get r) (lambda _ (error "closed")))
+                      (set-cdr! (assq 'close r) (lambda _ (error "closed")))
                       (dbm-close db)))
           r)))))
 
@@ -206,6 +200,3 @@
 
 (define (node-pos-map-close np)
   ((assoc-ref np 'close)))
-
-(define (node-pos-map-sync np)
-  ((assoc-ref np 'sync)))

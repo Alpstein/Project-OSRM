@@ -22,7 +22,7 @@
 (use file.util)
 (use gauche.sequence)
 (use sxml.adaptor) ;; for assert
-(use dbm.gdbm)
+(use default-dbm)
 
 (define *id* 0)
 
@@ -44,7 +44,7 @@
   (assert (at-least-two? args))
   (set! *id* (string->exact (cadr args)))
   (let-optionals* (cddr args) ((way-splits "way-splits.dbm"))
-    (let ((way-splits (dbm-open <gdbm> :path way-splits :rw-mode :write)))
+    (let ((way-splits (default-dbm-open :path way-splits :rw-mode :write)))
       (until (read) eof-object? => expr
              (when (at-least-two? expr)
                (dbm-put! way-splits

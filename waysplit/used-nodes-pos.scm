@@ -19,6 +19,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;
+(use default-dbm)
 (use huge-sparse-bitmap)
 (use sxml.adaptor) ;; for assert
 (use sxml.sxpath)
@@ -41,15 +42,18 @@
   ;;#?=(get-pipe-buffer-size (current-output-port))
   (let-optionals* (cdr args) ((used-nodes "used-nodes.dbm")
                               (cache-size "8192"))
-    (let ((used-nodes (make-huge-sparse-bitmap used-nodes
+    (let ((used-nodes (huge-sparse-bitmap-open (default-dbm-class)
+                                               used-nodes
                                                :cache-size (string->number cache-size)
                                                :rw-mode :read)))
-      (until (read) eof-object? => expr
-             (assert (eq? (car expr) 'node))
-             (let1 id (node-id expr)
-               (when (huge-sparse-bitmap-get-bit used-nodes id)
-                 (let ((x (node-x expr))
-                       (y (node-y expr)))
-                   (assert (and (number? x) (number? y)))
-                   (print id " " x " " y)))))))
+      (unwind-protect
+       (until (read) eof-object? => expr
+              (assert (eq? (car expr) 'node))
+              (let1 id (node-id expr)
+                (when (huge-sparse-bitmap-get-bit used-nodes id)
+                  (let ((x (node-x expr))
+                        (y (node-y expr)))
+                    (assert (and (number? x) (number? y)))
+                    (print id " " x " " y)))))
+       (huge-sparse-bitmap-close used-nodes))))
   0)

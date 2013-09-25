@@ -20,6 +20,7 @@
 ;;;
 
 (use file.util)
+(use default-dbm)
 (use huge-sparse-bitmap)
 (use gauche.sequence)
 (use sxml.adaptor) ;; for assert
@@ -51,43 +52,45 @@
 (define (main args)
   (let-optionals* (cdr args) ((node-bitmap "bitmap.dbm")
                               (cache-size "4096"))
-    (let ((bm (make-huge-sparse-bitmap node-bitmap
+    (let ((bm (huge-sparse-bitmap-open (default-dbm-class)
+                                       node-bitmap
                                        :cache-size (string->number cache-size)
                                        :rw-mode :read)))
-      (until (read) eof-object? => expr
-             (assert (eq? (car expr) 'way))
-	     ;; note: we have to output a line for each input line for parallel-pipe
-	     (write-line
-	      (let* ((nodes (way-nodes expr))
-                     (splits (and (at-least-two? nodes)
-                                  (filter (cute huge-sparse-bitmap-get-bit bm <>)
-                                          (subseq nodes 1 -1)))))
-                (cond [(and splits
-                            (not (null? splits)))
-                       ;; have to split that way
-                       (let* ((wn (list))
-                              (new-ways (list))
-                              (do-split (lambda()
-                                          (let ((en (car wn)))
-                                            ;; keep track of splits
-                                            (push! new-ways (reverse wn))
-                                            (set! wn (list en))))))
-                         ;; walk along the way and split it
-                         ;; todo: improve
-                         (push! wn (car nodes))
-                         (for-each (lambda(n)
-                                     (assert (not (null? wn)))
-                                     (push! wn n)
-                                     (when (member n splits)
-                                       (do-split)))
-                                   (cdr nodes))
-                         ;; last node might not be a real node
-                         ;; => we might have something to write
-                         (when (at-least-two? wn)
-                           (do-split))
-                         ;; output splits
-                         (cons (string->exact (sxml:attr expr 'id)) (reverse new-ways)))]
-                      [else
-                       '()]))))))
+      (unwind-protect
+       (until (read) eof-object? => expr
+              (assert (eq? (car expr) 'way))
+              ;; note: we have to output a line for each input line for parallel-pipe
+              (write-line
+               (let* ((nodes (way-nodes expr))
+                      (splits (and (at-least-two? nodes)
+                                   (filter (cute huge-sparse-bitmap-get-bit bm <>)
+                                           (subseq nodes 1 -1)))))
+                 (cond [(and splits
+                             (not (null? splits)))
+                        ;; have to split that way
+                        (let* ((wn (list))
+                               (new-ways (list))
+                               (do-split (lambda()
+                                           (let ((en (car wn)))
+                                             ;; keep track of splits
+                                             (push! new-ways (reverse wn))
+                                             (set! wn (list en))))))
+                          ;; walk along the way and split it
+                          ;; todo: improve
+                          (push! wn (car nodes))
+                          (for-each (lambda(n)
+                                      (assert (not (null? wn)))
+                                      (push! wn n)
+                                      (when (member n splits)
+                                        (do-split)))
+                                    (cdr nodes))
+                          ;; last node might not be a real node
+                          ;; => we might have something to write
+                          (when (at-least-two? wn)
+                            (do-split))
+                          ;; output splits
+                          (cons (string->exact (sxml:attr expr 'id)) (reverse new-ways)))]
+                       [else
+                        '()]))))
+       (huge-sparse-bitmap-close bm))))
   0)
-

@@ -19,6 +19,7 @@
 ;;; You should have received a copy of the GNU General Public License
 ;;; along with this program.  If not, see <http://www.gnu.org/licenses/>.
 ;;;
+(use default-dbm)
 (use huge-sparse-bitmap)
 ;;(use sxml.adaptor) ;; for assert
 (use srfi-19)
@@ -50,13 +51,15 @@
 (define (main args)
   (let-optionals* (cdr args) ((filename "bitmap.dbm")
                               (cache-size "1")) ;; doesn't matter in this setting (input is sorted)
-    (let ((bm (make-huge-sparse-bitmap filename
+    (let ((bm (huge-sparse-bitmap-open (default-dbm-class)
+                                       filename
                                        :cache-size (string->number cache-size)))
           (bits 0))
-      (until (read-line) eof-object? => x
-             (huge-sparse-bitmap-set-bit! bm (string->exact x) #t)
-             (assert (huge-sparse-bitmap-get-bit bm (string->exact x)))
-             (inc! bits))
-      (huge-sparse-bitmap-sync bm)
+      (unwind-protect
+       (until (read-line) eof-object? => x
+              (huge-sparse-bitmap-set-bit! bm (string->exact x) #t)
+              (assert (huge-sparse-bitmap-get-bit bm (string->exact x)))
+              (inc! bits))
+       (huge-sparse-bitmap-close bm))
       (info (format #f "stored ~s bits\n" bits))))
   0)

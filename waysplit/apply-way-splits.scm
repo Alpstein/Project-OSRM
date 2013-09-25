@@ -33,7 +33,7 @@
 (use sxml.adaptor) ;; for assert
 (use sxml.sxpath)
 (use sxml.tools)
-(use dbm.gdbm)
+(use default-dbm)
 (use srfi-19)
 (use gauche.uvector)
 (use binary.io)
@@ -282,13 +282,14 @@
                               (relation-file     "relation.dbm")
                               (cache-size "4096"))
     (sys-setenv "LUA_PATH" "../profiles/?.lua;;" #t)
-    (let ((way-splits (dbm-open <gdbm> :path way-splits :rw-mode :read))
-	  ;; (used-nodes (make-huge-sparse-bitmap used-nodes
+    (let ((way-splits (default-dbm-open :path way-splits :rw-mode :read))
+	  ;; (used-nodes (huge-sparse-bitmap-open (default-dbm-class)
+          ;;                                      used-nodes
           ;;                                      :cache-size (string->number cache-size)
           ;;                                      :rw-mode :read))
           (node-pos-map (node-pos-map-open node-pos-file :rw-mode :read))
-          (way-relation (dbm-open <gdbm> :path way-relation-file :rw-mode :read))
-          (relation     (dbm-open <gdbm> :path relation-file :rw-mode :read))
+          (way-relation (default-dbm-open :path way-relation-file :rw-mode :read))
+          (relation     (default-dbm-open :path relation-file :rw-mode :read))
           (num-in-nodes 0)
           (dropped-nodes 0)
           (num-in-ways 0)

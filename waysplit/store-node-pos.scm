@@ -31,8 +31,9 @@
                                        :cache-size 1
                                        :max-size (string->number max-id)
                                        )))
-      (until (read-line) eof-object? => line
-	     (let1 l (string-split line #\space)
-               (apply node-pos-map-set! (cons node-pos (map string->number l)))))
-      (node-pos-map-close node-pos)))
+      (unwind-protect
+       (until (read-line) eof-object? => line
+              (let1 l (string-split line #\space)
+                (apply node-pos-map-set! (cons node-pos (map string->number l)))))
+       (node-pos-map-close node-pos))))
   0)

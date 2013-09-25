@@ -31,11 +31,7 @@
   (use www.fastcgi)
   (use routing)
   (use osrm-client)
-  (cond-expand
-   (tokyocabinet
-    (use dbm.tokyocabinet))
-   (else
-    (use dbm.gdbm)))
+  (use default-dbm)
   (export wrap-osrm-main))
 
 (select-module osrm-wrapper)
@@ -539,7 +535,7 @@
                                         (motorbike . ((vstd . 60) (profile . mtb)))
                                         (offroad . ((vstd . 30) (profile . foot))))))
                           al)
-    (alist->hash-table (acons 'db (dbm-open *dbclass* :path (assoc-ref al 'waydb-file) :rw-mode :read)
+    (alist->hash-table (acons 'db (default-dbm-open :path (assoc-ref al 'waydb-file) :rw-mode :read)
                               al))))
 
 (define (wrap-osrm-main config . args)

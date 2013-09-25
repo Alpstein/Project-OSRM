@@ -24,7 +24,7 @@
 (use sxml.adaptor) ;; for assert
 (use sxml.sxpath)
 (use sxml.tools)
-(use dbm.gdbm)
+(use default-dbm)
 (use srfi-1)
 
 (define (string->exact x)
@@ -69,8 +69,8 @@
 (define (main args)
   (let-optionals* (cdr args) ((way-relation-file "way-relation.dbm")
                               (relation-file     "relation.dbm"))
-    (let ((way-relation (dbm-open <gdbm> :path way-relation-file))
-          (relation     (dbm-open <gdbm> :path relation-file)))
+    (let ((way-relation (default-dbm-open :path way-relation-file))
+          (relation     (default-dbm-open :path relation-file)))
       (until (read) eof-object? => expr
              (assert (eq? (car expr) 'relation))
              ;; filter interesting relations

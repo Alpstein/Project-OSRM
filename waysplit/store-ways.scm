@@ -1,15 +1,7 @@
 #| -*- mode: scheme; coding: utf-8; -*- |#
-:; exec gosh -Ftokyocabinet -I. -- $0 "$@"
+:; exec gosh -I. -- $0 "$@"
 
-(use dbm)
-(cond-expand
- (tokyocabinet
-  (use dbm.tokyocabinet)
-  (define *dbclass* <tcbdb>))
- (else
-  (use dbm.gdbm)
-  (define *dbclass* <gdbm>)))
-
+(use default-dbm)
 (use sxml.adaptor) ;; for assert
 (use sxml.sxpath)
 (use sxml.tools)
@@ -54,7 +46,7 @@
 
 (define (main args)
   (let-optionals* (cdr args) ((db-file "ways.dbm"))
-    (let ((db (dbm-open *dbclass* :path db-file :rw-mode :write)))
+    (let ((db (default-dbm-open :path db-file :rw-mode :write)))
       (unwind-protect
        (until (read) eof-object? => expr
               (case (car expr)

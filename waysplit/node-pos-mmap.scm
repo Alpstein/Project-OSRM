@@ -8,7 +8,6 @@
   (use gauche.sequence)
   (export node-pos-map-open
           node-pos-map-close
-          node-pos-map-sync
           node-pos-map-set!
           node-pos-map-get))
 
@@ -83,6 +82,3 @@
 
 (define (node-pos-map-close np)
   ((assoc-ref np 'close)))
-
-(define (node-pos-map-sync np)
-  ((assoc-ref np 'sync)))
