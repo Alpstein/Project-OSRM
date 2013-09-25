@@ -68,6 +68,7 @@
                            (slot-size 64) ;; number of coordinates / slot
                            (cache-size 4096)
                            (rw-mode :write)
+                           (max-size #f) ;; this implementation doesn't use it
                            )
   ;; fixed point encoding supporting NaN
   ;; note: returned string may include \0!
