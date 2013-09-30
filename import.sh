@@ -120,8 +120,12 @@ EOF
 } > ${OUTDIR}/tests.poly
 
 # cut out poly using osmosis
-CUTOSM="${OUTDIR}/$X.cut.${POLY%*.poly}.osm.bz2"
-test -f "$CUTOSM" || pv ${OUTDIR}/$X.osm.bz2|pbzip2 -d|timed osmosis --read-xml file=/dev/stdin --bounding-polygon file=${OUTDIR}/$POLY completeWays=yes --write-xml /dev/stdout|pbzip2 > "$CUTOSM"
+if [ "$POLY" = "world" ]; then
+    CUTOSM="${OUTDIR}/$X.osm.bz2"
+else
+    CUTOSM="${OUTDIR}/$X.cut.${POLY%*.poly}.osm.bz2"
+    test -f "$CUTOSM" || pv ${OUTDIR}/$X.osm.bz2|pbzip2 -d|timed osmosis --read-xml file=/dev/stdin --bounding-polygon file=${OUTDIR}/$POLY completeWays=yes --write-xml /dev/stdout|pbzip2 > "$CUTOSM"
+fi
 
 pushd waysplit
 # note: $X.split.osm.bz2 only for debugging
