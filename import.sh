@@ -120,7 +120,7 @@ EOF
 } > ${OUTDIR}/tests.poly
 
 # cut out poly using osmosis
-if [ "$POLY" = "world" ]; then
+if [ "$POLY" = "planet.poly" ]; then
     CUTOSM="${OUTDIR}/$X.osm.bz2"
 else
     CUTOSM="${OUTDIR}/$X.cut.${POLY%*.poly}.osm.bz2"
