@@ -51,6 +51,7 @@ EOF
 
 # create poly file
 for i in $(seq 10); do
+    test -f ${OUTDIR}/scale$i.poly && continue || true
     x="9.05"
     y="48.52"
     xl=$(echo "scale=2; $x - $i/5"|bc)
@@ -124,14 +125,14 @@ test -f "$CUTOSM" || pv ${OUTDIR}/$X.osm.bz2|pbzip2 -d|timed osmosis --read-xml 
 
 pushd waysplit
 # note: $X.split.osm.bz2 only for debugging
-timed ./waysplit.sh "$CUTOSM" ${OUTDIR}/${X}.ways.dbm ${OUTDIR}/${X}.sql.bz2 |tee >(pbzip2 > ${OUTDIR}/$X.split.osm.bz2)|osmosis --read-xml - --write-pbf ${OUTDIR}/$X.osm.pbf omitmetadata=true
+timed ./waysplit.sh "$CUTOSM" ${OUTDIR}/${X}.ways.dbm ${OUTDIR}/${X}.sql.bz2 > ${OUTDIR}/$X.split.osm
 popd
 
 for P in $PROFILES; do
     PROFILE="profiles/$P.lua"
     mkdir -p ${OUTDIR}/$P
-    cp -vl ${OUTDIR}/$X.osm.pbf ${OUTDIR}/$P/$X.osm.pbf
-    timed ./build/osrm-extract ${OUTDIR}/$P/$X.osm.pbf $PROFILE
+    cp -vl ${OUTDIR}/$X.split.osm ${OUTDIR}/$P/$X.osm
+    timed ./build/osrm-extract ${OUTDIR}/$P/$X.osm $PROFILE
     timed ./build/osrm-prepare ${OUTDIR}/$P/$X.osrm ${OUTDIR}/$P/$X.osrm.restrictions $PROFILE
-    rm -v ${OUTDIR}/$P/$X.osm.pbf
+    # rm -v ${OUTDIR}/$P/$X.osm
 done
