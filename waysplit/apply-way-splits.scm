@@ -125,6 +125,23 @@
     (lambda(w)
       (boolean (f w)))))
 
+(define way-without-tags
+  (let1 f (sxpath '((not@ tag)))
+    (lambda(w)
+      (cons (car w) (f w)))))
+
+(define tags-without-duration (sxpath "/tag/@k[not(self::k='duration')]/.."))
+
+(define (way-remove-duration w)
+  (append (way-without-tags w)
+          (tags-without-duration w)))
+
+;; (way-has-duration? #?=(way-remove-duration '(way (@ (id "10"))
+;;                                                  (foo "bar")
+;;                                                  (tag (@ (k "duration") (v "10")))
+;;                                                  (tag (@ (k "bar") (v "foo")))
+;;                                                  "foo")))
+
 (define (replace-id obj new-id)
   (let1 oldid (sxml:attr obj 'id)
     (assert oldid)
