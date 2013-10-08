@@ -51,7 +51,7 @@
     ;;             (newline))
     ;;           (reverse res))
     (let1 test-runs (group-sequence res :key (lambda(x) (car (assoc-ref x 'out-ways))))
-      (assert (= (size-of test-runs) 10))
+      ;; (assert (= (size-of test-runs) 10))
       (assert (every (cute = 3 <>) (map size-of test-runs)))
       (svg-plot (list (map (lambda(test-run)
                              (list (car (assoc-ref (car test-run) 'out-ways))
